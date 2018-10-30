@@ -1,5 +1,8 @@
+### Added by jackru
 
-# Created by https://www.gitignore.io/api/python
+# **/data/
+
+### Created by https://www.gitignore.io/api/python
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
