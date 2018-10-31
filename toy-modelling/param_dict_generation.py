@@ -77,8 +77,8 @@ def generate_mlp_list(hidden_layout_list, max_iter=1000):
     return mlp_list
 
 
-def generate_xgb_list(depth_list, learning_rate_list, objective='Linear',
-                      early_stopping_rounds=None):
+def generate_xgb_list(depth_list, learning_rate_list, n_jobs=-1,
+                      objective='Linear', early_stopping_rounds=None):
     xgb_list = []
     for depth in depth_list:
         for lr in learning_rate_list:
@@ -89,6 +89,7 @@ def generate_xgb_list(depth_list, learning_rate_list, objective='Linear',
                 'model_params': {
                     'max_depth': depth,
                     'learning_rate': lr,
+                    'n_jobs': n_jobs,
                     'objective': xgb_objective_map.get(objective, objective),
                 },
                 'fit_params': {
