@@ -63,7 +63,7 @@ def generate_glm_list(family, alpha_list):
     return glm_list
 
 
-def generate_mlp_list(hidden_layout_list):
+def generate_mlp_list(hidden_layout_list, max_iter=1000):
     mlp_list = []
     for layout in hidden_layout_list:
         mlp_list.append({
@@ -71,6 +71,7 @@ def generate_mlp_list(hidden_layout_list):
             'model_name': 'MLP_' + '_'.join([str(x) for x in layout]),
             'model_params': {
                 'hidden_layer_sizes': layout,
+                'max_iter': max_iter,
             },
         })
     return mlp_list
