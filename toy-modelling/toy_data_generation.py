@@ -54,18 +54,17 @@ def generate_interaction_data(nrows, nvars,
     np.random.seed(random_state)
     data = pd.DataFrame(index=range(nrows))
     for varnum in range(nvars):
-        data[f'x{varnum}'] = np.random.rand(nrows)
-    
+        data[f'x{varnum}'] = np.random.randn(nrows)
+
     for i in range(nvars - 1):
         for j in range(i+1, nvars):
             func = np.random.choice([
-                lambda x, y: x - y,
                 lambda x, y: abs(x - y),
                 lambda x, y: x * y,
                 lambda x, y: abs(x * y),
             ])
             data[f'i{i}j{j}'] = func(data[f'x{i}'], data[f'x{j}'])
-    
+
     data['gaussian_noise'] = np.random.randn(nrows) * noise_func(nvars)
     const = const_func(nvars)
     xvars = [x for x in data if x.startswith('x')]
