@@ -17,30 +17,38 @@ def generate_linear_data(nrows, nvars,
     const = const_func(nvars)
     xvars = [x for x in data if x.startswith('x')]
     coefs = pd.Series(np.random.randn(nvars))
-    data['y_linear'] = data[xvars].dot(coefs.values) + data['gaussian_noise'] + const
+    data['y_linear'] = (
+        data[xvars].dot(coefs.values)
+        + data['gaussian_noise']
+        + const
+    )
     X = data[xvars]
     y = data['y_linear']
     return (X, y)
 
 
-def generate_imbalanced_binary_variable(nrows, exponent_of_imbalance=3, random_state=None):
+def generate_imbalanced_binary_variable(nrows, exponent_of_imbalance=3,
+                                        random_state=None):
     np.random.seed(random_state)
     threshold = np.random.rand()
-    return (np.random.rand(nrows)**exponent_of_imbalance > threshold).astype(float)
+    return ((np.random.rand(nrows)**exponent_of_imbalance > threshold)
+            .astype(float))
 
 
-def generate_poisson_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
-                          continuous_scaling_factor=0.5, coefs_scaling_factor=0.2,
-                          const=np.log(0.01), random_state=None):
+def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
+                          binary_imbalance=3, continuous_scaling_factor=0.5,
+                          coefs_scaling_factor=0.2, const=np.log(0.01),
+                          random_state=None):
     np.random.seed(random_state)
     data = pd.DataFrame(index=range(nrows))
     binvars = int(nvars * binary_fraction)
     for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_imbalanced_binary_variable(nrows, binary_imbalance)
+        data[f'x{varnum}'] = generate_imbalanced_binary_variable(
+            nrows, binary_imbalance)
     for varnum in range(binvars, nvars):
         data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
     coefs = pd.Series(np.random.randn(nvars)) * coefs_scaling_factor
-    lam=np.exp(data.dot(coefs.values) + const)
+    lam = np.exp(data.dot(coefs.values) + const)
     data['y_poisson'] = np.random.poisson(lam)
     X = data[[x for x in data if x.startswith('x')]]
     y = data['y_poisson']
@@ -54,9 +62,12 @@ INTERACTION_FUNCS = [
 ]
 
 
-def generate_interaction_data(nrows, nvars, interaction_funcs=INTERACTION_FUNCS,
+def generate_interaction_data(nrows, nvars,
+                              interaction_funcs=INTERACTION_FUNCS,
                               noise_func=lambda x: (x ** 0.5) * 0.1,
-                              const_func=lambda x: np.random.randn() * (x ** 0.5),
+                              const_func=(
+                                  lambda x: np.random.randn() * (x ** 0.5)
+                              ),
                               random_state=None):
     '''
     Here's the docstring!
@@ -69,8 +80,11 @@ def generate_interaction_data(nrows, nvars, interaction_funcs=INTERACTION_FUNCS,
     const = const_func(nvars)
     xvars = [x for x in data if x.startswith('x')]
     coefs = pd.Series(np.random.randn(nvars))
-    data['y_interactions'] = data[xvars].dot(coefs.values) + data['gaussian_noise'] + const
-
+    data['y_interactions'] = (
+        data[xvars].dot(coefs.values)
+        + data['gaussian_noise']
+        + const
+    )
     for i in range(nvars - 1):
         for j in range(i+1, nvars):
             func = np.random.choice(interaction_funcs)
