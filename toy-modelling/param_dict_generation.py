@@ -86,7 +86,7 @@ def generate_xgb_list(depth_list, learning_rate_list, n_estimators=500,
             xgb_list.append({
                 'model': XGBRegressor,
                 'model_name': 'XGB_' + str(objective) + '_maxd_' + str(depth)
-                    + '_lr_' + str(lr),
+                              + '_lr_' + str(lr),
                 'model_params': {
                     'max_depth': depth,
                     'learning_rate': lr,
