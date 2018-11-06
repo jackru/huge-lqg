@@ -10,15 +10,36 @@ from xgboost import XGBRegressor
 
 
 def model_evaluation(y_test, X_test, fitted_model, training_time, start_time):
+    """
+    Evaluates model performance and returns a dict of evaluation metrics
+
+    :param 1D array-like y_test: the target variable of the test set
+    :param 2D array-like X_test: the predictor variables of the test set
+    :param fitted_model: a trained model implementing a predict() method
+    :param training_time: the duration of training
+    :param start_time: the timestamp at which training started
+    :return dict: a dict of evaluation metrics
+    """
     return {
         'mse_test': mse(y_test.values, fitted_model.predict(X_test.values)),
         'training_time': training_time,
-        'prediction_time': time.time() - training_time - start_time,
+        'prediction_time': time.time() - start_time - training_time,
     }
 
 
 def try_scikit_model(X_train, X_test, y_train, y_test, model_kwargs,
                      eval_func=model_evaluation):
+    """
+    Trains and evaluates a model implementing the scikit-learn API
+
+    :param 2D array-like X_train: the predictor variables of the training set
+    :param 2D array-like X_test: the predictor variables of the test set
+    :param 1D array-like y_train: the target variable of the training set
+    :param 1D array-like y_test: the target variable of the test set
+    :param dict model_kwargs: kwargs defining the model to be trained
+    :param callable eval_func: function that returns evaluation results
+    :return dict: a dict of evaluation metrics
+    """
     start = time.time()
     model = model_kwargs['model'](**model_kwargs.get('model_params', {}))
     if ((model_kwargs['model'] == XGBRegressor)
@@ -37,6 +58,17 @@ def try_scikit_model(X_train, X_test, y_train, y_test, model_kwargs,
 
 def try_statsmodels_model(X_train, X_test, y_train, y_test, model_kwargs,
                           eval_func=model_evaluation):
+    """
+    Trains and evaluates a model implementing the statsmodels API
+
+    :param 2D array-like X_train: the predictor variables of the training set
+    :param 2D array-like X_test: the predictor variables of the test set
+    :param 1D array-like y_train: the target variable of the training set
+    :param 1D array-like y_test: the target variable of the test set
+    :param dict model_kwargs: kwargs defining the model to be trained
+    :param callable eval_func: function that returns evaluation results
+    :return dict: a dict of evaluation metrics
+    """
     start = time.time()
     X_train_const = sm.add_constant(X_train)
     X_test_const = sm.add_constant(X_test)
