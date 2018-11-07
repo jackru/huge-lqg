@@ -83,3 +83,29 @@ def try_statsmodels_model(X_train, X_test, y_train, y_test, model_kwargs,
         f"{model_kwargs['model_name']} trained in {training_time:.2f} seconds"
     )
     return eval_func(y_test, X_test_const, fitted, training_time, start)
+
+
+def try_models(X_train, X_test, y_train, y_test,
+               statsmodels_list=None, scikit_list=None):
+    """
+    Trains models specified in the lists on the training data, and returns
+    evaluations of their performance on the test data
+
+    :param 2D array-like X_train: the predictor variables of the training set
+    :param 2D array-like X_test: the predictor variables of the test set
+    :param 1D array-like y_train: the target variable of the training set
+    :param 1D array-like y_test: the target variable of the test set
+    :param list[dict] statsmodels_list: each dict specifies a model to try
+    :param list[dict] scikit_list: each dict specifies a model to try
+    :return dict: evaluation metrics for all models
+    """
+    results = {}
+    for trial in statsmodels_list:
+        results[f"{trial['model_name']}"] = try_statsmodels_model(
+            X_train, X_test, y_train, y_test, trial
+        )
+    for trial in scikit_list:
+        results[f"{trial['model_name']}"] = try_scikit_model(
+            X_train, X_test, y_train, y_test, trial
+        )
+    return results
