@@ -1,5 +1,6 @@
 """
-Contains functions for generating parameter sets.
+Contains functions for generating lists of parameter dicts. These dicts
+specify models that can be trained and evaluated on scikit format data
 """
 from sklearn.neural_network import MLPRegressor
 import statsmodels.api as sm
