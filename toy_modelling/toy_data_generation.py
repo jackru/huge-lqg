@@ -70,7 +70,8 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
     :param float coefs_scaling_factor: determines volatility of the response
-    :param float const: the base margin, should be entered as np.log(base_rate)
+    :param float const: represents the base prediction given no other data.
+        Should be entered as np.log(base_rate)
     :param int random_state: specify for reproducable results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
@@ -131,7 +132,7 @@ def generate_interaction_data(nrows, nvars,
         + const
     )
     for i in range(nvars - 1):
-        for j in range(i+1, nvars):
+        for j in range(i + 1, nvars):
             func = np.random.choice(interaction_funcs)
             coef = np.random.randn()
             data['y_interactions'] += (
