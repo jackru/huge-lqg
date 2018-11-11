@@ -91,6 +91,44 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     return (X, y)
 
 
+def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
+                        binary_imbalance=3, continuous_scaling_factor=0.5,
+                        coefs_scaling_factor=0.5, const=np.log(1000),
+                        shape=1, random_state=None):
+    """
+    Generates data using a Poisson generative model
+
+    :param int nrows: the number of data rows output
+    :param int nvars: the number of predictor variables
+    :param float binary_fraction: fraction of variables that are binary-valued
+    :param float binary_imbalance: determines likelhood of binary variables
+        skewing positive (below 1) or negative (over 1)
+    :param float continuous_scaling_factor: scale of continuous variable value
+        range relative to binary variables
+    :param float coefs_scaling_factor: determines volatility of the response
+    :param float const: represents the base prediction given no other data.
+        Should be entered as np.log(base_rate)
+    :param int shape: the gamma distribution shape parameter
+    :param int random_state: specify for reproducable results
+    :return tuple(pd.DataFrame, pd.Series): predictors and target variable
+    """
+    np.random.seed(random_state)
+    data = pd.DataFrame(index=range(nrows))
+    binvars = int(nvars * binary_fraction)
+    for varnum in range(binvars):
+        data[f'x{varnum}'] = generate_imbalanced_binary_variable(
+            nrows, binary_imbalance)
+    for varnum in range(binvars, nvars):
+        data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
+    coefs = pd.Series(np.random.randn(nvars)) * coefs_scaling_factor
+    mu = np.exp(data.dot(coefs.values) + const)
+    scale = mu / shape
+    data['y_gamma'] = np.random.gamma(shape, scale)
+    X = data[[x for x in data if x.startswith('x')]]
+    y = data['y_gamma']
+    return (X, y)
+
+
 INTERACTION_FUNCS = [
     lambda x, y: abs(x - y),
     lambda x, y: x * y,

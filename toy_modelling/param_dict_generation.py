@@ -15,6 +15,7 @@ sm_family_map = {
 xgb_objective_map = {
     'Poisson': 'count:poisson',
     'Linear': 'reg:linear',
+    'Gamma': 'reg:gamma',
 }
 
 
