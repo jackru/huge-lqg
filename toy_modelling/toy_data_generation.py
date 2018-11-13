@@ -1,10 +1,13 @@
 """
 Contains functions for generating toy data.
 """
+import sys
+
 import numpy as np
 import pandas as pd
 from scipy.special import comb
 
+sys.path.append('../maths')
 from maths.combinations import nth_combination
 
 
