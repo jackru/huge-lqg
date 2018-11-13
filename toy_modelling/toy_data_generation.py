@@ -3,42 +3,12 @@ Contains functions for generating toy data.
 """
 import numpy as np
 import pandas as pd
+from scipy.special import comb
+
+from maths.combinations import nth_combination
 
 
-def generate_linear_data(nrows, nvars,
-                         noise_func=lambda x: (x ** 0.5) * 0.1,
-                         const_func=lambda x: np.random.randn() * (x ** 0.5),
-                         random_state=None):
-    """
-    Generates data using a linear generative model
-
-    :param int nrows: the number of data rows output
-    :param int nvars: the number of predictor variables
-    :param f(nvars) noise_func: determines scale of noise as function of nvars
-    :param f(nvars) const_func: determines scale of const as function of nvars
-    :param int random_state: specify for reproducable results
-    :return tuple(pd.DataFrame, pd.Series): predictors and target variable
-    """
-    np.random.seed(random_state)
-    data = pd.DataFrame(index=range(nrows))
-    for varnum in range(nvars):
-        data[f'x{varnum}'] = np.random.rand(nrows)
-    data['gaussian_noise'] = np.random.randn(nrows) * noise_func(nvars)
-    const = const_func(nvars)
-    xvars = [x for x in data if x.startswith('x')]
-    coefs = pd.Series(np.random.randn(nvars))
-    data['y_linear'] = (
-        data[xvars].dot(coefs.values)
-        + data['gaussian_noise']
-        + const
-    )
-    X = data[xvars]
-    y = data['y_linear']
-    return (X, y)
-
-
-def generate_imbalanced_binary_variable(nrows, exponent_of_imbalance=3,
-                                        random_state=None):
+def generate_binvar(nrows, exponent_of_imbalance=3, random_state=None):
     """
     Generates a binary random variable with skew towards positive or negative
     class imbalance determined by an exponent
@@ -53,6 +23,84 @@ def generate_imbalanced_binary_variable(nrows, exponent_of_imbalance=3,
     threshold = np.random.rand()
     return ((np.random.rand(nrows)**exponent_of_imbalance > threshold)
             .astype(float))
+
+
+def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
+                    continuous_scaling_factor=0.5, random_state=None):
+    """
+    Generates basic predictor data.
+
+    :param int nrows: the number of data rows output
+    :param int nvars: the number of predictor variables
+    :param int random_state: specify for reproducable results
+    :return pd.DataFrame: the data
+    """
+    np.random.seed(random_state)
+    data = pd.DataFrame(index=range(nrows))
+    binvars = int(nvars * binary_fraction)
+    for varnum in range(binvars):
+        data[f'x{varnum}'] = generate_binvar(nrows, binary_imbalance)
+    for varnum in range(binvars, nvars):
+        data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
+    return data
+
+
+
+
+def generate_systematic_y(x_data, terms=[(1, 1.0)], debug=False,
+                          random_state=None):
+    """
+    Generates contributing terms and multiplies each by a coefficient.
+
+    :param pd.DataFrame x_data: the predictor variables
+    :param list[tuple(int, numeric)] term_sparsities: determines the number of
+        terms of each order that will contribute to y
+    :param bool debug: if True, returns information on the generative model
+    :param int random_state: specify for reproducable results
+    :return pd.Series: the response variable
+    :return dict: (optional) the debug info
+    """
+    np.random.seed(random_state)
+    nrows, nvars = x_data.shape
+    for order, term_count in terms:
+        n_combs = comb(nvars, order, exact=True)
+        if type(term_count) = float:
+            term_count = int(n_combs * term_count)
+        choices = np.random.choice(range(n_combs), term_count, replace=False)
+        for i in sorted(choices):
+            pass
+
+
+def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
+                         continuous_scaling_factor=0.5,
+                         noise_func=lambda x: (x ** 0.5) * 0.1,
+                         const_func=lambda x: np.random.randn() * (x ** 0.5),
+                         random_state=None):
+    """
+    Generates data using a linear generative model
+
+    :param int nrows: the number of data rows output
+    :param int nvars: the number of predictor variables
+    :param f(nvars) noise_func: determines scale of noise as function of nvars
+    :param f(nvars) const_func: determines scale of const as function of nvars
+    :param int random_state: specify for reproducable results
+    :return tuple(pd.DataFrame, pd.Series): predictors and target variable
+    """
+    np.random.seed(random_state)
+    data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
+                           continuous_scaling_factor)
+    data['gaussian_noise'] = np.random.randn(nrows) * noise_func(nvars)
+    const = const_func(nvars)
+    xvars = [x for x in data if x.startswith('x')]
+    coefs = pd.Series(np.random.randn(nvars))
+    data['y_linear'] = (
+        data[xvars].dot(coefs.values)
+        + data['gaussian_noise']
+        + const
+    )
+    X = data[xvars]
+    y = data['y_linear']
+    return (X, y)
 
 
 def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
@@ -79,8 +127,7 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     data = pd.DataFrame(index=range(nrows))
     binvars = int(nvars * binary_fraction)
     for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_imbalanced_binary_variable(
-            nrows, binary_imbalance)
+        data[f'x{varnum}'] = generate_binvar(nrows, binary_imbalance)
     for varnum in range(binvars, nvars):
         data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
     coefs = pd.Series(np.random.randn(nvars)) * coefs_scaling_factor
@@ -116,8 +163,7 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
     data = pd.DataFrame(index=range(nrows))
     binvars = int(nvars * binary_fraction)
     for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_imbalanced_binary_variable(
-            nrows, binary_imbalance)
+        data[f'x{varnum}'] = generate_binvar(nrows, binary_imbalance)
     for varnum in range(binvars, nvars):
         data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
     coefs = pd.Series(np.random.randn(nvars)) * coefs_scaling_factor
@@ -181,3 +227,5 @@ def generate_interaction_data(nrows, nvars,
     y = data['y_interactions']
 
     return (X, y)
+
+
