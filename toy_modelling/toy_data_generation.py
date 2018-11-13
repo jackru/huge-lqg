@@ -52,14 +52,17 @@ ARRAY_LIST_FUNCS = [
 ]
 
 
-def generate_systematic_y(x_data, terms=[(1, 1.0)], debug=False,
-                          random_state=None):
+def generate_systematic_y(x_data, terms=[(1, 1.0)],
+                          interaction_funcs=ARRAY_LIST_FUNCS,
+                          debug=False, random_state=None):
     """
     Generates contributing terms and multiplies each by a coefficient.
 
     :param pd.DataFrame x_data: the predictor variables
-    :param list[tuple(int, numeric)] term_sparsities: determines the number of
-        terms of each order that will contribute to y
+    :param list[tuple(int, numeric)] terms: determines the number of terms of
+        each order that will contribute to y
+    :param list[functions] interaction_funcs: a list of functions specifying
+        variable interactions
     :param bool debug: if True, returns information on the generative model
     :param int random_state: specify for reproducable results
     :return pd.Series: the response variable
@@ -67,16 +70,27 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)], debug=False,
     """
     np.random.seed(random_state)
     nrows, nvars = x_data.shape
+    if debug:
+        debug_dict = {}
+    y = np.zeros(nrows)
     for order, term_count in terms:
         n_combs = comb(nvars, order, exact=True)
-        if type(term_count) = float:
+        if type(term_count) == float:
             term_count = int(n_combs * term_count)
         choices = np.random.choice(range(n_combs), term_count, replace=False)
         for i in sorted(choices):
             combination = nth_combination(n_combs, order, i)
-            data_col_list = [data[f'x{j}'] for j in combination]
-            func = np.random.choice(interaction_funcs)
-            value = func(data_col_list)
+            data_col_list = [x_data[f'x{j}'] for j in combination]
+            func = np.random.choice(list(interaction_funcs))
+            values = interaction_funcs[func](data_col_list)
+            coef = np.random.randn()
+            if debug:
+                debug_dict[combination] = {'func': func, 'coef': coef}
+            y += coef * values
+    if debug:
+        return y, debug_dict
+    else:
+        return y
 
 
 def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
