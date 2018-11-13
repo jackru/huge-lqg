@@ -88,7 +88,7 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
                 func = 'identity'
                 values = x_data[f'x{i}']
             else:
-                combination = nth_combination(n_combs, order, i)
+                combination = nth_combination(nvars, order, i)
                 data_col_list = [x_data[f'x{j}'] for j in combination]
                 func = np.random.choice(list(interaction_funcs))
                 values = interaction_funcs[func](data_col_list)
