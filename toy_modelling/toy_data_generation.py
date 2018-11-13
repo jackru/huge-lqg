@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.special import comb
 
 sys.path.append('../maths')
-from maths.combinations import nth_combination
+from combinations import nth_combination
 
 
 def generate_binvar(nrows, exponent_of_imbalance=3, random_state=None):
