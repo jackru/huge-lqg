@@ -49,9 +49,11 @@ def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
 
 
 ARRAY_LIST_FUNCS = {
-    lambda array_list: np.product(array_list, axis=0),
-    lambda array_list: np.max(array_list, axis=0),
-    lambda array_list: np.max(array_list, axis=0) - np.min(array_list, axis=0),
+    'product': lambda array_list: np.product(array_list, axis=0),
+    'max': lambda array_list: np.max(array_list, axis=0),
+    'range': (
+        lambda array_list: np.max(array_list, axis=0) - np.min(array_list, axis=0)
+    ),
 }
 
 
