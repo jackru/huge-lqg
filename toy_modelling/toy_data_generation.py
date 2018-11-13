@@ -45,6 +45,11 @@ def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
     return data
 
 
+ARRAY_LIST_FUNCS = [
+    lambda array_list: np.product(array_list, axis=0),
+    lambda array_list: np.max(array_list, axis=0),
+    lambda array_list: np.max(array_list, axis=0) - np.min(array_list, axis=0),
+]
 
 
 def generate_systematic_y(x_data, terms=[(1, 1.0)], debug=False,
@@ -68,7 +73,10 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)], debug=False,
             term_count = int(n_combs * term_count)
         choices = np.random.choice(range(n_combs), term_count, replace=False)
         for i in sorted(choices):
-            pass
+            combination = nth_combination(n_combs, order, i)
+            data_col_list = [data[f'x{j}'] for j in combination]
+            func = np.random.choice(interaction_funcs)
+            value = func(data_col_list)
 
 
 def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
@@ -227,5 +235,3 @@ def generate_interaction_data(nrows, nvars,
     y = data['y_interactions']
 
     return (X, y)
-
-
