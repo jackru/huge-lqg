@@ -84,6 +84,7 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
         choices = np.random.choice(range(n_combs), term_count, replace=False)
         for i in sorted(choices):
             if order == 1:
+                combination = i
                 func = 'identity'
                 values = x_data[f'x{i}']
             else:
