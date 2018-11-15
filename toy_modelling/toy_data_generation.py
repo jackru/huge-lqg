@@ -156,12 +156,8 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
-    data = pd.DataFrame(index=range(nrows))
-    binvars = int(nvars * binary_fraction)
-    for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_binvar(nrows, binary_imbalance)
-    for varnum in range(binvars, nvars):
-        data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
+    data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
+                           continuous_scaling_factor)
     coefs = pd.Series(np.random.randn(nvars)) * coefs_scaling_factor
     lam = np.exp(data.dot(coefs.values) + const)
     data['y_poisson'] = np.random.poisson(lam)
@@ -192,12 +188,8 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
-    data = pd.DataFrame(index=range(nrows))
-    binvars = int(nvars * binary_fraction)
-    for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_binvar(nrows, binary_imbalance)
-    for varnum in range(binvars, nvars):
-        data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
+    data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
+                           continuous_scaling_factor)
     coefs = pd.Series(np.random.randn(nvars)) * coefs_scaling_factor
     mu = np.exp(data.dot(coefs.values) + const)
     scale = mu / shape
