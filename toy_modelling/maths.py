@@ -1,5 +1,5 @@
 """
-Combinatorial helpers
+Maths functions for toy modelling
 """
 import numpy as np
 from scipy.special import comb
@@ -27,3 +27,12 @@ def nth_combination(from_N, choose_k, nth_comb):
         outlist.append(min_pick + pick)
         min_pick += (pick + 1)
     return tuple(outlist)
+
+
+def scale_series(series, new_range=(0, 1)):
+    old_min = min(series)
+    old_max = max(series)
+    normed = (series - old_min) / (old_max - old_min)
+    new_min, new_max = new_range
+    new_series = normed * (new_max - new_min) + new_min
+    return new_series
