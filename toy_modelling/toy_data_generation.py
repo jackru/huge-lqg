@@ -109,31 +109,27 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
 
 
 def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
-                         continuous_scaling_factor=0.5,
-                         noise_func=lambda x: (x ** 0.5) * 0.1,
-                         const_func=lambda x: np.random.randn() * (x ** 0.5),
-                         random_state=None):
+                         continuous_scaling_factor=0.5, noise_scalar=1,
+                         terms=[(1, 1.0)], interaction_funcs=ARRAY_LIST_FUNCS,
+                         scale_to_range=None, random_state=None):
     """
     Generates data using a linear generative model
 
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
     :param f(nvars) noise_func: determines scale of noise as function of nvars
-    :param f(nvars) const_func: determines scale of const as function of nvars
     :param int random_state: specify for reproducable results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
                            continuous_scaling_factor)
-    data['gaussian_noise'] = np.random.randn(nrows) * noise_func(nvars)
-    const = const_func(nvars)
-    xvars = [x for x in data if x.startswith('x')]
-    coefs = pd.Series(np.random.randn(nvars))
     data['y_linear'] = (
-        data[xvars].dot(coefs.values)
-        + data['gaussian_noise']
-        + const
+        generate_systematic_y(
+            data, terms=terms, interaction_funcs=interaction_funcs,
+            scale_to_range=scale_to_range
+        )
+        + np.random.randn(nrows) * noise_scalar
     )
     X = data[xvars]
     y = data['y_linear']
