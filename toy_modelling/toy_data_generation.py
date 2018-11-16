@@ -8,7 +8,7 @@ from scipy.special import comb
 from maths import nth_combination, scale_series
 
 
-def generate_binary_variable(nrows, exponent_of_imbalance=3, random_state=None):
+def generate_binary_var(nrows, exponent_of_imbalance=3, random_state=None):
     """
     Generates a binary random variable with skew towards positive or negative
     class imbalance determined by an exponent
@@ -45,7 +45,7 @@ def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
     data = pd.DataFrame(index=range(nrows))
     binvars = int(nvars * binary_fraction)
     for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_binary_variable(nrows, binary_imbalance)
+        data[f'x{varnum}'] = generate_binary_var(nrows, binary_imbalance)
     for varnum in range(binvars, nvars):
         data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
     return data
@@ -179,7 +179,7 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
                            continuous_scaling_factor)
     if scale_to_range:
-        scale_to_range=tuple(np.log(scale_to_range))
+        scale_to_range = tuple(np.log(scale_to_range))
     lam = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
               scale_to_range=scale_to_range,
@@ -219,7 +219,7 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
                            continuous_scaling_factor)
     if scale_to_range:
-        scale_to_range=tuple(np.log(scale_to_range))
+        scale_to_range = tuple(np.log(scale_to_range))
     mu = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
               scale_to_range=scale_to_range,
