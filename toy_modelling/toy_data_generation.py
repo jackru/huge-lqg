@@ -56,7 +56,7 @@ ARRAY_LIST_FUNCS = {
 
 def generate_systematic_y(x_data, terms=[(1, 1.0)],
                           interaction_funcs=ARRAY_LIST_FUNCS,
-                          debug=False, random_state=None):
+                          debug=False, scale_to_range=None, random_state=None):
     """
     Generates contributing terms and multiplies each by a coefficient.
 
@@ -94,6 +94,8 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
             if debug:
                 debug_dict[combination] = {'func': func, 'coef': coef}
             y += coef * values
+    if scale_to_range:
+        y = scale_series(y, scale_to_range)
     if debug:
         return y, debug_dict
     else:
