@@ -16,7 +16,7 @@ def generate_binvar(nrows, exponent_of_imbalance=3, random_state=None):
     :param int nrows: the number of binary observations returned
     :param positive, numeric exponent_of_imbalance: determines likelhood of
         variable skewing positive (exponent below 1) or negative (over 1)
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return array of binary-valued floats:
     """
     np.random.seed(random_state)
@@ -38,7 +38,7 @@ def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
         variables skewing positive (exponent below 1) or negative (over 1)
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return pd.DataFrame: the data
     """
     np.random.seed(random_state)
@@ -72,7 +72,7 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
     :param list[functions] interaction_funcs: a list of functions specifying
         variable interactions
     :param bool debug: if True, returns information on the generative model
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return pd.Series: the response variable
     :return dict: (optional) the debug info
     """
@@ -118,7 +118,7 @@ def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
     :param f(nvars) noise_func: determines scale of noise as function of nvars
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
@@ -153,7 +153,7 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     :param float coefs_scaling_factor: determines volatility of the response
     :param float const: represents the base prediction given no other data.
         Should be entered as np.log(base_rate)
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
@@ -185,7 +185,7 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
     :param float const: represents the base prediction given no other data.
         Should be entered as np.log(base_rate)
     :param int shape: the gamma distribution shape parameter
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
