@@ -131,7 +131,7 @@ def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
         )
         + np.random.randn(nrows) * noise_scalar
     )
-    X = data[xvars]
+    X = data[[x for x in data if x.startswith('x')]]
     y = data['y_linear']
     return (X, y)
 
