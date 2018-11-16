@@ -139,7 +139,7 @@ def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
 def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
                           binary_imbalance=3, continuous_scaling_factor=0.5,
                           terms=[(1, 1.0)], interaction_funcs=ARRAY_LIST_FUNCS,
-                          scale_to_range=(np.log(0.0003), np.log(0.3)),
+                          scale_to_range=(0.0003, 0.3),
                           random_state=None):
     """
     Generates data using a Poisson generative model
@@ -163,7 +163,7 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
                            continuous_scaling_factor)
     lam = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
-              scale_to_range=scale_to_range
+              scale_to_range=tuple(np.log(scale_to_range))
           ))
     data['y_poisson'] = np.random.poisson(lam)
     X = data[[x for x in data if x.startswith('x')]]
@@ -174,7 +174,7 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
 def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
                         binary_imbalance=3, continuous_scaling_factor=0.5,
                         terms=[(1, 1.0)], interaction_funcs=ARRAY_LIST_FUNCS,
-                        scale_to_range=(np.log(100), np.log(1000000)),
+                        scale_to_range=(100, 1000000),
                         shape=1, random_state=None):
     """
     Generates data using a Poisson generative model
@@ -198,7 +198,7 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
                            continuous_scaling_factor)
     mu = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
-              scale_to_range=scale_to_range
+              scale_to_range=tuple(np.log(scale_to_range))
           ))
     scale = mu / shape
     data['y_gamma'] = np.random.gamma(shape, scale)
