@@ -1,14 +1,11 @@
 """
 Contains functions for generating toy data.
 """
-import sys
-
 import numpy as np
 import pandas as pd
 from scipy.special import comb
 
-sys.path.append('../maths')
-from combinations import nth_combination  # noqa: E402
+from maths import nth_combination, scale_series
 
 
 def generate_binvar(nrows, exponent_of_imbalance=3, random_state=None):
