@@ -32,6 +32,12 @@ def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
 
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
+    :param float binary_fraction: the fraction of generated variables that are
+        binary (the remainder will be continuous normally distributed)
+    :param positive, numeric binary_imbalance: determines likelhood of binary
+        variables skewing positive (exponent below 1) or negative (over 1)
+    :param float continuous_scaling_factor: scale of continuous variable value
+        range relative to binary variables
     :param int random_state: specify for reproducable results
     :return pd.DataFrame: the data
     """
