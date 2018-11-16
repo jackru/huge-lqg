@@ -8,7 +8,7 @@ from scipy.special import comb
 from maths import nth_combination, scale_series
 
 
-def generate_binvar(nrows, exponent_of_imbalance=3, random_state=None):
+def generate_binary_variable(nrows, exponent_of_imbalance=3, random_state=None):
     """
     Generates a binary random variable with skew towards positive or negative
     class imbalance determined by an exponent
@@ -16,7 +16,7 @@ def generate_binvar(nrows, exponent_of_imbalance=3, random_state=None):
     :param int nrows: the number of binary observations returned
     :param positive, numeric exponent_of_imbalance: determines likelhood of
         variable skewing positive (exponent below 1) or negative (over 1)
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return array of binary-valued floats:
     """
     np.random.seed(random_state)
@@ -38,14 +38,14 @@ def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
         variables skewing positive (exponent below 1) or negative (over 1)
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return pd.DataFrame: the data
     """
     np.random.seed(random_state)
     data = pd.DataFrame(index=range(nrows))
     binvars = int(nvars * binary_fraction)
     for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_binvar(nrows, binary_imbalance)
+        data[f'x{varnum}'] = generate_binary_variable(nrows, binary_imbalance)
     for varnum in range(binvars, nvars):
         data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
     return data
@@ -72,7 +72,9 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
     :param list[functions] interaction_funcs: a list of functions specifying
         variable interactions
     :param bool debug: if True, returns information on the generative model
-    :param int random_state: specify for reproducable results
+    :param tuple(min, max) scale_to_range: if specified, the response will be
+        scaled to this range
+    :param int random_state: specify for reproducible results
     :return pd.Series: the response variable
     :return dict: (optional) the debug info
     """
@@ -117,8 +119,21 @@ def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
 
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
-    :param f(nvars) noise_func: determines scale of noise as function of nvars
-    :param int random_state: specify for reproducable results
+    :param float binary_fraction: the fraction of generated variables that are
+        binary (the remainder will be continuous normally distributed)
+    :param positive, numeric binary_imbalance: determines likelhood of binary
+        variables skewing positive (exponent below 1) or negative (over 1)
+    :param float continuous_scaling_factor: scale of continuous variable value
+        range relative to binary variables
+    :param noise_scalar numeric: determines the scale of noise added to the
+        systematic component of the response
+    :param list[tuple(int, numeric)] terms: determines the number of terms of
+        each order that will contribute to y
+    :param list[functions] interaction_funcs: a list of functions specifying
+        variable interactions
+    :param tuple(min, max) scale_to_range: if specified, the response will be
+        scaled to this range
+    :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
@@ -151,19 +166,23 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
         skewing positive (below 1) or negative (over 1)
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
-    :param list[tuples] terms:
-    :param list[callable] interaction_funcs:
-    :param float const: represents the base prediction given no other data.
-        Should be entered as np.log(base_rate)
-    :param int random_state: specify for reproducable results
+    :param list[tuple(int, numeric)] terms: determines the number of terms of
+        each order that will contribute to y
+    :param list[functions] interaction_funcs: a list of functions specifying
+        variable interactions
+    :param tuple(min, max) scale_to_range: if specified, the lambda used to
+        generate samples will be scaled to this range
+    :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
                            continuous_scaling_factor)
+    if scale_to_range:
+        scale_to_range=tuple(np.log(scale_to_range))
     lam = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
-              scale_to_range=tuple(np.log(scale_to_range))
+              scale_to_range=scale_to_range,
           ))
     data['y_poisson'] = np.random.poisson(lam)
     X = data[[x for x in data if x.startswith('x')]]
@@ -186,19 +205,24 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
         skewing positive (below 1) or negative (over 1)
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
-    :param float coefs_scaling_factor: determines volatility of the response
-    :param float const: represents the base prediction given no other data.
-        Should be entered as np.log(base_rate)
+    :param list[tuple(int, numeric)] terms: determines the number of terms of
+        each order that will contribute to y
+    :param list[functions] interaction_funcs: a list of functions specifying
+        variable interactions
+    :param tuple(min, max) scale_to_range: if specified, the mu used to
+        generate samples will be scaled to this range
     :param int shape: the gamma distribution shape parameter
-    :param int random_state: specify for reproducable results
+    :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
     np.random.seed(random_state)
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
                            continuous_scaling_factor)
+    if scale_to_range:
+        scale_to_range=tuple(np.log(scale_to_range))
     mu = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
-              scale_to_range=tuple(np.log(scale_to_range))
+              scale_to_range=scale_to_range,
           ))
     scale = mu / shape
     data['y_gamma'] = np.random.gamma(shape, scale)
