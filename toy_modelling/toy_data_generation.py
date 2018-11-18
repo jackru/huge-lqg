@@ -1,6 +1,8 @@
 """
 Contains functions for generating toy data.
 """
+from random import sample
+
 import numpy as np
 import pandas as pd
 from scipy.special import comb
@@ -87,7 +89,7 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
         n_combs = comb(nvars, order, exact=True)
         if type(term_count) == float:
             term_count = int(n_combs * term_count)
-        choices = np.random.choice(range(n_combs), term_count, replace=False)
+        choices = sample(range(n_combs), term_count)
         for i in sorted(choices):
             if order == 1:
                 combination = i
