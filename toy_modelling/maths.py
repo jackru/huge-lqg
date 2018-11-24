@@ -48,19 +48,23 @@ def nth_combination(from_N, choose_k, nth_comb):
     return tuple(outlist)
 
 
-def scale_series(series, new_range=(0, 1)):
+def scale_series(series, ci=100, new_range=(0, 1)):
     """
     Scales a series by translation and multiplication, preserving the
     relative position of all items in the series.
 
     :param array-like series: the series to be scaled
-    :param tuple(numeric) new_range: the required min and max after
-        scaling
+    :param numeric ci: the percentage of data that will fall within the new
+        range (tails either side of this range will have equal weights)
+    :param tuple(numeric) new_range: the new bounds of the quantile range
+        specified by `ci` after scaling
     :return array-like series: the scaled series
     """
-    old_min = min(series)
-    old_max = max(series)
-    normed = (series - old_min) / (old_max - old_min)
-    new_min, new_max = new_range
-    new_series = normed * (new_max - new_min) + new_min
+    lower_q = (100 - ci) / 2
+    upper_q = (100 + ci) / 2
+    old_lower_q = np.percentile(series, lower_q)
+    old_upper_q = np.percentile(series, upper_q)
+    normed = (series - old_lower_q) / (old_upper_q - old_lower_q)
+    new_lower_q, new_upper_q = new_range
+    new_series = normed * (new_upper_q - new_lower_q) + new_lower_q
     return new_series
