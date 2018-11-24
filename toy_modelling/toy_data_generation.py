@@ -1,7 +1,7 @@
 """
 Contains functions for generating toy data.
 """
-from random import sample
+from random import sample, seed
 
 import numpy as np
 import pandas as pd
@@ -9,6 +9,13 @@ from scipy.special import comb
 
 from maths import nth_combination, scale_series
 
+
+def get_rng(random_state=None):
+    """Returns a RandomState object given None, int or RandomState input"""
+    return (
+        random_state if type(random_state) is np.random.mtrand.RandomState
+        else np.random.RandomState(random_state)
+    )
 
 def generate_binary_var(nrows, exponent_of_imbalance=3, random_state=None):
     """
@@ -21,9 +28,9 @@ def generate_binary_var(nrows, exponent_of_imbalance=3, random_state=None):
     :param int random_state: specify for reproducible results
     :return array of binary-valued floats:
     """
-    np.random.seed(random_state)
-    threshold = np.random.rand()
-    return ((np.random.rand(nrows)**exponent_of_imbalance > threshold)
+    rng = get_rng(random_state)
+    threshold = rng.rand()
+    return ((rng.rand(nrows)**exponent_of_imbalance > threshold)
             .astype(float))
 
 
@@ -43,13 +50,13 @@ def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
     :param int random_state: specify for reproducible results
     :return pd.DataFrame: the data
     """
-    np.random.seed(random_state)
+    rng = get_rng(random_state)
     data = pd.DataFrame(index=range(nrows))
     binvars = int(nvars * binary_fraction)
     for varnum in range(binvars):
-        data[f'x{varnum}'] = generate_binary_var(nrows, binary_imbalance)
+        data[f'x{varnum}'] = generate_binary_var(nrows, binary_imbalance, rng)
     for varnum in range(binvars, nvars):
-        data[f'x{varnum}'] = np.random.randn(nrows) * continuous_scaling_factor
+        data[f'x{varnum}'] = rng.randn(nrows) * continuous_scaling_factor
     return data
 
 
@@ -80,7 +87,8 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
     :return pd.Series: the response variable
     :return dict: (optional) the debug info
     """
-    np.random.seed(random_state)
+    rng = get_rng(random_state)
+    seed(rng)
     nrows, nvars = x_data.shape
     if debug:
         debug_dict = {}
@@ -98,9 +106,9 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
             else:
                 combination = nth_combination(nvars, order, i)
                 data_col_list = [x_data[f'x{j}'] for j in combination]
-                func = np.random.choice(list(interaction_funcs))
+                func = rng.choice(list(interaction_funcs))
                 values = interaction_funcs[func](data_col_list)
-            coef = np.random.randn()
+            coef = rng.randn()
             if debug:
                 debug_dict[combination] = {'func': func, 'coef': coef}
             y += coef * values
@@ -138,13 +146,13 @@ def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
     :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
-    np.random.seed(random_state)
+    rng = get_rng(random_state)
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
-                           continuous_scaling_factor)
+                           continuous_scaling_factor, rng)
     data['y_linear'] = (
         generate_systematic_y(
             data, terms=terms, interaction_funcs=interaction_funcs,
-            scale_to_range=scale_to_range
+            scale_to_range=scale_to_range, random_state=rng
         )
         + np.random.randn(nrows) * noise_scalar
     )
@@ -177,16 +185,16 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
-    np.random.seed(random_state)
+    rng = get_rng(random_state)
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
-                           continuous_scaling_factor)
+                           continuous_scaling_factor, rng)
     if scale_to_range:
         scale_to_range = tuple(np.log(scale_to_range))
     lam = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
-              scale_to_range=scale_to_range,
+              scale_to_range=scale_to_range, random_state=rng
           ))
-    data['y_poisson'] = np.random.poisson(lam)
+    data['y_poisson'] = rng.poisson(lam)
     X = data[[x for x in data if x.startswith('x')]]
     y = data['y_poisson']
     return (X, y)
@@ -217,17 +225,17 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
     :param int random_state: specify for reproducible results
     :return tuple(pd.DataFrame, pd.Series): predictors and target variable
     """
-    np.random.seed(random_state)
+    rng = get_rng(random_state)
     data = generate_x_data(nrows, nvars, binary_fraction, binary_imbalance,
-                           continuous_scaling_factor)
+                           continuous_scaling_factor, rng)
     if scale_to_range:
         scale_to_range = tuple(np.log(scale_to_range))
     mu = np.exp(generate_systematic_y(
               data, terms=terms, interaction_funcs=interaction_funcs,
-              scale_to_range=scale_to_range,
+              scale_to_range=scale_to_range, random_state=rng
           ))
     scale = mu / shape
-    data['y_gamma'] = np.random.gamma(shape, scale)
+    data['y_gamma'] = rng.gamma(shape, scale)
     X = data[[x for x in data if x.startswith('x')]]
     y = data['y_gamma']
     return (X, y)
