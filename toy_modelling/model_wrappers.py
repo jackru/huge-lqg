@@ -118,7 +118,7 @@ try_map = {
 
 
 def try_models(X_train, X_test, y_train, y_test,
-               param_list=None, model=None,
+               param_list, model,
                eval_func=model_evaluation):
     """
     Trains models specified in the lists on the training data, and returns
