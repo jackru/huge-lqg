@@ -17,13 +17,14 @@ def get_rng(random_state=None):
         else np.random.RandomState(random_state)
     )
 
+
 def generate_binary_var(nrows, exponent_of_imbalance=3, random_state=None):
     """
     Generates a binary random variable with skew towards positive or negative
     class imbalance determined by an exponent
 
     :param int nrows: the number of binary observations returned
-    :param positive, numeric exponent_of_imbalance: determines likelhood of
+    :param positive, numeric exponent_of_imbalance: determines likelihood of
         variable skewing positive (exponent below 1) or negative (over 1)
     :param int random_state: specify for reproducible results
     :return array of binary-valued floats:
@@ -37,16 +38,19 @@ def generate_binary_var(nrows, exponent_of_imbalance=3, random_state=None):
 def generate_x_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
                     continuous_scaling_factor=0.5, random_state=None):
     """
-    Generates basic predictor data.
+    Generates independent variables. These can be binary or continuous. Binary
+    variables can be specified to be imbalanced. Continous variables are
+    sampled from the standard normal distribution but can be scaled to adjust
+    their size relative to the binary variables.
 
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
     :param float binary_fraction: the fraction of generated variables that are
         binary (the remainder will be continuous normally distributed)
-    :param positive, numeric binary_imbalance: determines likelhood of binary
+    :param positive, numeric binary_imbalance: determines likelihood of binary
         variables skewing positive (exponent below 1) or negative (over 1)
-    :param float continuous_scaling_factor: scale of continuous variable value
-        range relative to binary variables
+    :param float continuous_scaling_factor: continuous variables are normally
+        distributed about zero. This specifies their standard deviation
     :param int random_state: specify for reproducible results
     :return pd.DataFrame: the data
     """
@@ -73,13 +77,26 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
                           interaction_funcs=ARRAY_LIST_FUNCS,
                           debug=False, scale_to_range=None, random_state=None):
     """
-    Generates contributing terms and multiplies each by a coefficient.
+    Generates the output of a randomly generated linear model given independent
+    variables and a specified set of interaction terms. The default is for all
+    first order terms (single variables) to contribute independently. Any
+    combination of second or higher order terms (interactions between two or
+    more variables) can also be specified.
+
+    If debug is specified, the randomly generated coefficients of the
+    generative linear model and the (optional) scale_to_range parameter are
+    also returned, enabling the generative model to be fully known.
 
     :param pd.DataFrame x_data: the predictor variables
     :param list[tuple(int, numeric)] terms: determines the number of terms of
-        each order that will contribute to y
+        each order that will contribute to y. The first item in the tuple
+        specifies the order, the second specifies the number of terms of that
+        order that will contribute. If specified as a float, this fraction of
+        possible combinations will be generated. If an integer, this number of
+        terms will be generated.
     :param list[functions] interaction_funcs: a list of functions specifying
-        variable interactions
+        variable interactions. These should accept a list of 1D arrays and
+        return a single array of the same dimension.
     :param bool debug: if True, returns information on the generative model
     :param tuple(min, max) scale_to_range: if specified, the response will be
         scaled to this range
@@ -112,10 +129,11 @@ def generate_systematic_y(x_data, terms=[(1, 1.0)],
             if debug:
                 debug_dict[combination] = {'func': func, 'coef': coef}
             y += coef * values
+    y.name = 'systematic_y'
     if scale_to_range:
         y = scale_series(y, scale_to_range)
     if debug:
-        return y, debug_dict
+        return y, debug_dict, scale_to_range
     else:
         return y
 
@@ -125,13 +143,13 @@ def generate_linear_data(nrows, nvars, binary_fraction=1.0, binary_imbalance=3,
                          terms=[(1, 1.0)], interaction_funcs=ARRAY_LIST_FUNCS,
                          scale_to_range=None, random_state=None):
     """
-    Generates data using a linear generative model
+    Generates data using a linear generative model.
 
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
     :param float binary_fraction: the fraction of generated variables that are
         binary (the remainder will be continuous normally distributed)
-    :param positive, numeric binary_imbalance: determines likelhood of binary
+    :param positive, numeric binary_imbalance: determines likelihood of binary
         variables skewing positive (exponent below 1) or negative (over 1)
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
@@ -167,12 +185,12 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
                           scale_to_range=(0.0003, 0.3),
                           random_state=None):
     """
-    Generates data using a Poisson generative model
+    Generates data using a Poisson generative model.
 
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
     :param float binary_fraction: fraction of variables that are binary-valued
-    :param float binary_imbalance: determines likelhood of binary variables
+    :param float binary_imbalance: determines likelihood of binary variables
         skewing positive (below 1) or negative (over 1)
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
@@ -197,7 +215,7 @@ def generate_poisson_data(nrows, nvars, binary_fraction=1.0,
     data['y_poisson'] = rng.poisson(lam)
     X = data[[x for x in data if x.startswith('x')]]
     y = data['y_poisson']
-    return (X, y)
+    return (X, y, lam)
 
 
 def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
@@ -211,7 +229,7 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
     :param int nrows: the number of data rows output
     :param int nvars: the number of predictor variables
     :param float binary_fraction: fraction of variables that are binary-valued
-    :param float binary_imbalance: determines likelhood of binary variables
+    :param float binary_imbalance: determines likelihood of binary variables
         skewing positive (below 1) or negative (over 1)
     :param float continuous_scaling_factor: scale of continuous variable value
         range relative to binary variables
@@ -238,4 +256,4 @@ def generate_gamma_data(nrows, nvars, binary_fraction=1.0,
     data['y_gamma'] = rng.gamma(shape, scale)
     X = data[[x for x in data if x.startswith('x')]]
     y = data['y_gamma']
-    return (X, y)
+    return (X, y, shape, scale)
