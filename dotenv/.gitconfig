@@ -1,0 +1,28 @@
+[user]
+    name = Jack Russell
+    email = j.russell@iwoca.co.uk
+[color]
+    branch = auto
+    diff = auto
+    interactive = auto
+    pager = true
+    status = auto
+    ui = true
+[color "status"]
+    added = green
+    changed = yellow
+    untracked = red
+[push]
+    default = current
+[core]
+    autocrlf = input
+    pager = less -FRSX
+[alias]
+    br = branch
+    cm = commit
+    co = checkout
+    ff = pull --ff-only
+    st = status
+    rbm = rebase master
+    lg = log --graph --pretty=format:'%C(yellow)%h%C(auto)%d%Creset %s %C(white)- %an, %ar%Creset'
+    ol = log --pretty=oneline
